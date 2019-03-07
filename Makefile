@@ -33,7 +33,7 @@ DEPS = $(OBJECTS:.o=.d)
 # flags #
 COMPILE_FLAGS = -std=c++17 -Wall -Wextra -g
 EXTRA_COMPILE_FLAGS = $(COMPILE_FLAGS) `pkg-config libgvc --cflags`
-LDFLAGS = -lstdc++fs
+LDFLAGS = -lstdc++
 EXTRA_LDFLAGS = $(LDFLAGS) `pkg-config libgvc --libs` -L$(GUROBI_PATH)/lib -lgurobi_c++ -lgurobi81
 INCLUDES = -I include/ -I submodules/json/single_include/ 
 EXTRA_INCLUDES = $(INCLUDES) -I $(GUROBI_PATH)/include/
@@ -63,7 +63,13 @@ clean:
 .PHONY: basic
 basic: dirs
 basic: export CXXFLAGS := $(CXXFLAGS) $(COMPILE_FLAGS)
-basic: $(TEST_OBJECTS) $(addsuffix $(TEST_EXEC),$(TEST_OBJECTS))
+basic: $(BUILD_PATH)/libpbqp-papa.a
+#basic: $(TEST_OBJECTS) $(addsuffix $(TEST_EXEC),$(TEST_OBJECTS))
+
+# Static library
+$(BUILD_PATH)/libpbqp-papa.a: $(OBJECTS) 
+	ar rvs $@ $(OBJECTS)
+	echo "Successfully built $@"
 
 #Run tests
 $(TEST_BUILD_PATH)/%.o$(TEST_EXEC): $(TEST_BUILD_PATH)/%.o

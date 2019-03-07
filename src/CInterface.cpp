@@ -17,14 +17,13 @@
 #include <iostream>
 #include <algorithm>
 
-namespace pbqppapa {
+using namespace pbqppapa;
 
 #define CINTERFACEIMPL(TYPENAME,SHORTNAME) \
 struct pbqp_ ## SHORTNAME ## _parsing { \
 PBQPGraph<InfinityWrapper< TYPENAME >>* graph; \
 std::vector<PBQPNode<InfinityWrapper< TYPENAME >>*> nodes; \
 std::vector<PBQPNode<InfinityWrapper< TYPENAME >>*> peo; \
-unsigned long maximumIndex = 0; \
 }; \
 extern "C" void pbqp_ ## SHORTNAME ## _addNode(struct  pbqp_ ## SHORTNAME ## _parsing* pbqpparsing, \
 		TYPENAME* data, unsigned short length, unsigned int index) { \
@@ -53,14 +52,14 @@ extern "C" void pbqp_ ## SHORTNAME ## _addEdge(struct  pbqp_ ## SHORTNAME ## _pa
 struct pbqp_ ## SHORTNAME ## _solution* pbqp_ ## SHORTNAME ## _convertSolution(struct  pbqp_ ## SHORTNAME ## _parsing* \
 		pbqpparsing, PBQPSolution<InfinityWrapper<TYPENAME>>* cppSol) { \
 	pbqp_ ## SHORTNAME ## _solution* cSol = new pbqp_ ## SHORTNAME ## _solution(); \
-	cSol->selections = new unsigned short [pbqpparsing->maximumIndex]; \
-	for(unsigned int i = 0; i < pbqpparsing->maximumIndex; i++) { \
+	cSol->selections = new unsigned short [pbqpparsing->nodes.size()]; \
+	for(unsigned int i = 0; i < pbqpparsing->nodes.size(); i++) { \
 		if (!pbqpparsing->nodes.at(i)) { \
 			continue; \
 		} \
 		cSol->selections[i] = cppSol->getSolution(i); \
 	} \
-	cSol->length = pbqpparsing->maximumIndex; \
+	cSol->length = pbqpparsing->nodes.size(); \
 	return cSol; \
 } \
 extern "C" struct pbqp_ ## SHORTNAME ## _solution* pbqp_ ## SHORTNAME ## _solve(struct pbqp_ ## SHORTNAME ## _parsing* \
@@ -111,6 +110,7 @@ extern "C" void pbqp_ ## SHORTNAME ## _free(struct pbqp_ ## SHORTNAME ## _parsin
 } \
 extern "C" void pbqp_ ## SHORTNAME ## _finishPEO(struct pbqp_ ## SHORTNAME ## _parsing* pbqpparsing) { \
 	std::reverse(pbqpparsing->peo.begin(), pbqpparsing->peo.end()); \
+	pbqpparsing->graph->setPEO(pbqpparsing->peo); \
 } \
 extern "C" TYPENAME pbqp_ ## SHORTNAME ## _getNodeVektorValue(struct pbqp_ ## SHORTNAME ## _parsing* pbqpparsing, \
 		unsigned int nodeIndex, unsigned short entryIndex) { \
@@ -163,5 +163,3 @@ CGUROBI(unsigned int, uint)
 CGUROBI(unsigned short, ushort)
 CGUROBI(unsigned long, ulong)
 #endif
-
-}
